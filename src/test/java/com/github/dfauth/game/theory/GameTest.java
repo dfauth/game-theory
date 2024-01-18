@@ -1,5 +1,6 @@
 package com.github.dfauth.game.theory;
 
+import com.github.dfauth.game.theory.strategies.AlwaysCooperate;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
@@ -9,7 +10,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static com.github.dfauth.game.theory.Draw.COOPERATE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Slf4j
@@ -17,29 +17,8 @@ public class GameTest {
 
     @Test
     public void testIt() throws ExecutionException, InterruptedException, TimeoutException {
-        Strategy strategy1 = new Strategy() {
-
-            @Override
-            public String getName() {
-                return "Strategy1";
-            }
-
-            @Override
-            public void play(Round round) {
-                CompletableFuture<Result> f = round.submit(COOPERATE);
-            }
-        };
-        Strategy strategy2 = new Strategy() {
-            @Override
-            public String getName() {
-                return "Strategy2";
-            }
-
-            @Override
-            public void play(Round round) {
-                CompletableFuture<Result> f = round.submit(COOPERATE);
-            }
-        };
+        Strategy strategy1 = new AlwaysCooperate("alwaysCooperate1");
+        Strategy strategy2 = new AlwaysCooperate("alwaysCooperate2");
 
         Game game = new Game(1, strategy1, strategy2);
         CompletableFuture<Result> result = game.play();

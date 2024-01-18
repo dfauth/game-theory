@@ -3,7 +3,6 @@ package com.github.dfauth.game.theory;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -46,7 +45,7 @@ public class Game {
         }
         Result r = new Result(Map.of(s1.getName(), 0, s2.getName(), 0));
         return completedFuture(Arrays.stream(rounds).reduce(r,(_m,_r) -> {
-            _r.thenAccept(result -> result.add(r));
+            _r.thenAccept(_m::add);
             return _m;
         },(m1,m2) -> m1));
     }

@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 
 @Slf4j
@@ -22,8 +21,9 @@ public class Result {
         this.map.putAll(map);
     }
 
-    public void add(Result r) {
-        r.forEach((k,v) -> this.map.computeIfPresent(k, (_k,_v) -> _v+v));
+    public Result add(Result r) {
+        r.forEach((k,v) -> this.map.computeIfPresent(k, (_k, _v) -> _v + v));
+        return this;
     }
 
     private void forEach(BiConsumer<String, Integer> c2) {
