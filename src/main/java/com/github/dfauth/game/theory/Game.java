@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -16,6 +17,10 @@ public class Game {
     private final Strategy s2;
     private CompletableFuture<Draw> f1 = new CompletableFuture<>();
     private CompletableFuture<Draw> f2 = new CompletableFuture<>();
+
+    public Game(int start, int end, Strategy s1, Strategy s2) {
+        this((int)(Math.random()*(end-start))+start,s1,s2);
+    }
 
     public Game(int cnt, Strategy s1, Strategy s2) {
         this.s1 = s1;
@@ -43,10 +48,23 @@ public class Game {
         for(CompletableFuture<Result> r : rounds) {
             rounds[i++] = playRound(s1,s2);
         }
+        return result();
+    }
+
+    private CompletableFuture<Result> result() {
         Result r = new Result(Map.of(s1.getName(), 0, s2.getName(), 0));
-        return completedFuture(Arrays.stream(rounds).reduce(r,(_m,_r) -> {
+        return completedFuture(Arrays.stream(rounds).reduce(r,(_m, _r) -> {
             _r.thenAccept(_m::add);
             return _m;
         },(m1,m2) -> m1));
+    }
+
+    public int getRounds() {
+        return rounds.length;
+    }
+
+    public Optional<Strategy> getWinner() {
+//        CompletableFuture<Optional<Map.Entry<String, Integer>>> result = result().thenApply(m -> m.getMap().entrySet().stream().reduce((e1, e2) -> e1.getValue().intValue() > e2.getValue().intValue() ? e1.getKey() : e2.getKey()));
+        return Optional.empty();
     }
 }
