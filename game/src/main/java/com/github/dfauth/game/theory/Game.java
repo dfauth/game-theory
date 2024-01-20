@@ -6,11 +6,12 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 @Slf4j
-public class Game {
+public class Game implements Function<String,Strategy> {
 
     private final CompletableFuture<Result>[] rounds;
     private final Strategy s1;
@@ -63,13 +64,8 @@ public class Game {
         return rounds.length;
     }
 
-    public CompletableFuture<Optional<Strategy>> getWinner() {
-        String name1 = s1.getName();
-        return result()
-                .thenApply(Result::getWinner)// CompletableFuture<Optional<String>> might possibly have the name of the winner eventuall
-                .thenApply(name -> // when it comes
-                        name.map(n -> // if it exists
-                                Optional.of(n).filter(name1::equals).map(_ignored -> s1).orElse(s2) // test the name and return the corresponding strategy
-                        )); // Otherwise no winner - game was tied
+    @Override
+    public Strategy apply(String n) {
+        return Optional.of(n).filter(s1.getName()::equals).map(_ignored -> s1).orElse(s2);
     }
 }

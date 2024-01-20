@@ -24,7 +24,7 @@ public class GameTest {
         int rounds = game.getRounds();
         CompletableFuture<Result> result = game.play();
         assertEquals(new Result(Map.of(strategy1.getName(),3*rounds, strategy2.getName(),3*rounds)), result.get(1000, TimeUnit.MILLISECONDS));
-        assertTrue(waitOn(game.getWinner()).isEmpty());
+        assertTrue(waitOn(result).getWinner().map(game).isEmpty());
     }
 
     @Test
@@ -38,7 +38,7 @@ public class GameTest {
         assertTrue(rounds<=250);
         CompletableFuture<Result> result = game.play();
         assertEquals(new Result(Map.of(strategy1.getName(),3*rounds, strategy2.getName(),3*rounds)), result.get(1000, TimeUnit.MILLISECONDS));
-        assertTrue(waitOn(game.getWinner()).isEmpty());
+        assertTrue(waitOn(result).getWinner().map(game).isEmpty());
     }
 
     @Test
@@ -49,7 +49,8 @@ public class GameTest {
         Game game = new Game(100, strategy1, strategy2);
         CompletableFuture<Result> result = game.play();
         result.thenAccept(r -> log.info("result: "+r));
-        assertEquals(strategy1, waitOn(game.getWinner()).get());
+        assertTrue(waitOn(result).getWinner().map(game).isPresent());
+        assertEquals(strategy1, waitOn(result).getWinner().map(game).get());
     }
 
     public static <T> T waitOn(CompletableFuture<T> f) {
