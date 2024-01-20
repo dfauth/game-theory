@@ -26,7 +26,10 @@ public class Result {
     }
 
     public Result add(Result r) {
-        r.forEach((k,v) -> this.map.computeIfPresent(k, (_k, _v) -> _v.add(v)));
+        r.forEach((k,v) -> {
+            this.map.computeIfPresent(k, (_k, _v) -> _v.add(v));
+            this.map.computeIfAbsent(k, _k -> v);
+        });
         return this;
     }
 
