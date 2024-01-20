@@ -19,24 +19,24 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode
 public class Result {
 
-    private final Map<String, Integer> map = new HashMap<>();
+    private final Map<String, Score> map = new HashMap<>();
 
-    public Result(Map<String, Integer> map) {
+    public Result(Map<String, Score> map) {
         this.map.putAll(map);
     }
 
     public Result add(Result r) {
-        r.forEach((k,v) -> this.map.computeIfPresent(k, (_k, _v) -> _v + v));
+        r.forEach((k,v) -> this.map.computeIfPresent(k, (_k, _v) -> _v.add(v)));
         return this;
     }
 
-    private void forEach(BiConsumer<String, Integer> c2) {
+    private void forEach(BiConsumer<String, Score> c2) {
         map.entrySet().stream().forEach(e -> c2.accept(e.getKey(),e.getValue()));
     }
 
     public Optional<String> getWinner() {
         // find the max
-        return map.values().stream().max(Integer::compareTo).flatMap(max -> {
+        return map.values().stream().max(Score::compareTo).flatMap(max -> {
             // now find all entries equals to the max
             List<String> winners = map.entrySet().stream().filter(e -> e.getValue().equals(max)).map(Map.Entry::getKey).collect(Collectors.toList());
             // there can only be one winner

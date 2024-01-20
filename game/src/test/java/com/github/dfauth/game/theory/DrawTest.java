@@ -12,10 +12,10 @@ public class DrawTest {
 
     @Test
     public void testIt() {
-        assertEquals(3,COOPERATE.play(COOPERATE));
-        assertEquals(0,COOPERATE.play(DEFECT));
-        assertEquals(5,DEFECT.play(COOPERATE));
-        assertEquals(1,DEFECT.play(DEFECT));
+        assertEquals(new Score(3),COOPERATE.play(COOPERATE));
+        assertEquals(new Score(0),COOPERATE.play(DEFECT));
+        assertEquals(new Score(5),DEFECT.play(COOPERATE));
+        assertEquals(new Score(1),DEFECT.play(DEFECT));
     }
 
 }

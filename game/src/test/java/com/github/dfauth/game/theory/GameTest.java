@@ -16,19 +16,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class GameTest {
 
     @Test
-    public void testIt() throws ExecutionException, InterruptedException, TimeoutException {
+    public void testIt() {
         Strategy strategy1 = new AlwaysCooperate("alwaysCooperate1");
         Strategy strategy2 = new AlwaysCooperate("alwaysCooperate2");
 
         Game game = new Game(1, strategy1, strategy2);
         int rounds = game.getRounds();
         CompletableFuture<Result> result = game.play();
-        assertEquals(new Result(Map.of(strategy1.getName(),3*rounds, strategy2.getName(),3*rounds)), result.get(1000, TimeUnit.MILLISECONDS));
+        assertEquals(new Result(Map.of(strategy1.getName(),new Score(3*rounds), strategy2.getName(),new Score(3*rounds))), waitOn(result));
         assertTrue(waitOn(result).getWinner().map(game).isEmpty());
     }
 
     @Test
-    public void testRandomGame() throws ExecutionException, InterruptedException, TimeoutException {
+    public void testRandomGame() {
         Strategy strategy1 = new AlwaysCooperate("alwaysCooperate1");
         Strategy strategy2 = new AlwaysCooperate("alwaysCooperate2");
 
@@ -37,14 +37,14 @@ public class GameTest {
         assertTrue(rounds>=150);
         assertTrue(rounds<=250);
         CompletableFuture<Result> result = game.play();
-        assertEquals(new Result(Map.of(strategy1.getName(),3*rounds, strategy2.getName(),3*rounds)), result.get(1000, TimeUnit.MILLISECONDS));
+        assertEquals(new Result(Map.of(strategy1.getName(),new Score(0,rounds, 0,3*rounds), strategy2.getName(),new Score(0,rounds,0,3*rounds))), waitOn(result));
         assertTrue(waitOn(result).getWinner().map(game).isEmpty());
     }
 
     @Test
     public void testRandomVsAlwaysDefectGame() {
         Strategy strategy1 = new AlwaysDefect();
-        Strategy strategy2 = new WeightedRandom(0.50d);
+        Strategy strategy2 = new WeightedRandom(0.10d);
 
         Game game = new Game(100, strategy1, strategy2);
         CompletableFuture<Result> result = game.play();

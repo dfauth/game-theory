@@ -3,8 +3,8 @@ package com.github.dfauth.game.theory;
 import java.util.function.Function;
 
 public enum Draw {
-    COOPERATE(d -> d.isCooperate() ? 3 : 0),
-    DEFECT(d -> d.isDefect() ? 1 : 5);
+    COOPERATE(d -> d.isCooperate() ? new Score(3) : new Score(0)),
+    DEFECT(d -> d.isDefect() ? new Score(1) : new Score(5));
 
     private boolean isDefect() {
         return !isCooperate();
@@ -14,13 +14,13 @@ public enum Draw {
         return this == COOPERATE;
     }
 
-    private Function<Draw, Integer> f;
+    private Function<Draw, Score> f;
 
-    Draw(Function<Draw, Integer> f) {
+    Draw(Function<Draw, Score> f) {
         this.f = f;
     }
 
-    public int play(Draw draw) {
+    public Score play(Draw draw) {
         return f.apply(draw);
     }
 }

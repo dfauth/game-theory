@@ -53,7 +53,7 @@ public class Game implements Function<String,Strategy> {
     }
 
     private CompletableFuture<Result> result() {
-        Result r = new Result(Map.of(s1.getName(), 0, s2.getName(), 0));
+        Result r = new Result(Map.of(s1.getName(), new Score(), s2.getName(), new Score()));
         return completedFuture(Arrays.stream(rounds).reduce(r,(_m, _r) -> {
             _r.thenAccept(_m::add);
             return _m;
