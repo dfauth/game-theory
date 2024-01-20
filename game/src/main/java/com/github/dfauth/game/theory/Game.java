@@ -15,9 +15,6 @@ public class Game {
     private final CompletableFuture<Result>[] rounds;
     private final Strategy s1;
     private final Strategy s2;
-    private CompletableFuture<Draw> f1 = new CompletableFuture<>();
-    private CompletableFuture<Draw> f2 = new CompletableFuture<>();
-
     public Game(int start, int end, Strategy s1, Strategy s2) {
         this((int)(Math.random()*(end-start))+start,s1,s2);
     }
@@ -30,6 +27,9 @@ public class Game {
     }
 
     private CompletableFuture<Result> playRound(Strategy s1, Strategy s2) {
+        CompletableFuture<Draw> f1 = new CompletableFuture<>();
+        CompletableFuture<Draw> f2 = new CompletableFuture<>();
+
         CompletableFuture<Result> f = f1.thenCompose(d1 -> f2.thenApply(d2 ->
                 new Result(Map.of(s1.getName(), d1.play(d2), s2.getName(), d2.play(d1)))));
         s1.play(draw -> {
@@ -63,8 +63,13 @@ public class Game {
         return rounds.length;
     }
 
-    public Optional<Strategy> getWinner() {
-//        CompletableFuture<Optional<Map.Entry<String, Integer>>> result = result().thenApply(m -> m.getMap().entrySet().stream().reduce((e1, e2) -> e1.getValue().intValue() > e2.getValue().intValue() ? e1.getKey() : e2.getKey()));
-        return Optional.empty();
+    public CompletableFuture<Optional<Strategy>> getWinner() {
+        String name1 = s1.getName();
+        return result()
+                .thenApply(Result::getWinner)// CompletableFuture<Optional<String>> might possibly have the name of the winner eventuall
+                .thenApply(name -> // when it comes
+                        name.map(n -> // if it exists
+                                Optional.of(n).filter(name1::equals).map(_ignored -> s1).orElse(s2) // test the name and return the corresponding strategy
+                        )); // Otherwise no winner - game was tied
     }
 }
