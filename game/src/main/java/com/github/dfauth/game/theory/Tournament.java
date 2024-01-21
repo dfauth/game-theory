@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
@@ -24,7 +23,7 @@ public class Tournament {
         this.strategies = strategies;
     }
 
-    public CompletableFuture<Optional<Result>> run() {
+    public CompletableFuture<Result> run() {
         List<CompletableFuture<Result>> tmp = new ArrayList<>(strategies.length * strategies.length);
         for(Strategy left : strategies) {
             for(Strategy right : strategies) {
@@ -32,6 +31,6 @@ public class Tournament {
                 tmp.add(new Game(start,end,left,right).play());
             }
         }
-        return tmp.stream().collect(Collectors.future(l -> l.stream().reduce(Result::add)));
+        return tmp.stream().collect(Collectors.future(Result.reduce));
     }
 }

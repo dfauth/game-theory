@@ -4,7 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
+
+import java.util.Optional;
+
+import static com.github.dfauth.game.theory.Draw.COOPERATE;
+import static com.github.dfauth.game.theory.Draw.DEFECT;
 
 @Data
 @AllArgsConstructor
@@ -37,17 +41,17 @@ public class Score {
     }
 
     public int compareTo(Score s) {
-        int w = wins - s.wins;
-        int t = ties - s.ties;
-        int l = losses - s.losses;
-        int p = points - s.points;
-        return w > 0 ? 1 :
-                w < 0 ? -1 :
-                        t > 0 ? 1 :
-                                t < 0 ? -1 :
-                                        l > 0 ? -1 :
-                                            l > 0 ? 1 :
-                                                    p > 0 ? 1 : -1;
+        return points - s.points;
+    }
 
+    public Optional<Draw> drew() {
+        return Optional.of(rounds()).filter(r -> r==1).map(_ignored ->
+                points == 5 ? DEFECT :
+                        points == 3 ? COOPERATE :
+                                points == 1 ? DEFECT : COOPERATE);
+    }
+
+    public int rounds() {
+        return wins+ties+losses;
     }
 }

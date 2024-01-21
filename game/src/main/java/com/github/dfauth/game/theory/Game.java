@@ -1,14 +1,15 @@
 package com.github.dfauth.game.theory;
 
+import com.github.dfauth.game.theory.utils.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
 import java.util.function.Function;
-
-import static java.util.concurrent.CompletableFuture.completedFuture;
 
 @Slf4j
 public class Game implements Function<String,Strategy> {
@@ -16,11 +17,22 @@ public class Game implements Function<String,Strategy> {
     private final CompletableFuture<Result>[] rounds;
     private final Strategy s1;
     private final Strategy s2;
+    private final Executor executor;
+
     public Game(int start, int end, Strategy s1, Strategy s2) {
-        this((int)(Math.random()*(end-start))+start,s1,s2);
+        this(ForkJoinPool.commonPool(), (int)(Math.random()*(end-start))+start,s1,s2);
+    }
+
+    public Game(Executor executor, int start, int end, Strategy s1, Strategy s2) {
+        this(executor, (int)(Math.random()*(end-start))+start,s1,s2);
     }
 
     public Game(int cnt, Strategy s1, Strategy s2) {
+        this(ForkJoinPool.commonPool(),cnt,s1,s2);
+    }
+
+    public Game(Executor executor, int cnt, Strategy s1, Strategy s2) {
+        this.executor = executor;
         this.s1 = s1;
         this.s2 = s2;
 
@@ -33,14 +45,14 @@ public class Game implements Function<String,Strategy> {
 
         CompletableFuture<Result> f = f1.thenCompose(d1 -> f2.thenApply(d2 ->
                 new Result(Map.of(s1.getName(), d1.play(d2), s2.getName(), d2.play(d1)))));
-        s1.play(draw -> {
+        executor.execute(() -> s1.play(draw -> {
             f1.complete(draw);
             return f;
-        });
-        s2.play(draw -> {
+        }));
+        executor.execute(() -> s2.play(draw -> {
             f2.complete(draw);
             return f;
-        });
+        }));
         return f;
     }
 
@@ -53,11 +65,7 @@ public class Game implements Function<String,Strategy> {
     }
 
     private CompletableFuture<Result> result() {
-        Result r = new Result(Map.of(s1.getName(), new Score(), s2.getName(), new Score()));
-        return completedFuture(Arrays.stream(rounds).reduce(r,(_m, _r) -> {
-            _r.thenAccept(_m::add);
-            return _m;
-        },(m1,m2) -> m1));
+        return Arrays.stream(rounds).collect(Collectors.future(Result.reduce));
     }
 
     public int getRounds() {
