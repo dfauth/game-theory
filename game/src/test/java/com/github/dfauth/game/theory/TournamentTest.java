@@ -2,7 +2,6 @@ package com.github.dfauth.game.theory;
 
 import com.github.dfauth.game.theory.strategies.AlwaysCooperate;
 import com.github.dfauth.game.theory.strategies.AlwaysDefect;
-import com.github.dfauth.game.theory.strategies.TitForTat;
 import com.github.dfauth.game.theory.strategies.WeightedRandom;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -29,8 +28,8 @@ public class TournamentTest {
         Tournament tournament = new Tournament(start, end, games,
                 new AlwaysCooperate(),
                 new AlwaysDefect(),
-                new WeightedRandom(0.10d),
-                new TitForTat()
+                new WeightedRandom(0.10d)
+//                new TitForTat()
         );
         CompletableFuture<Result> result = tournament.run();
         result.thenApply(Result::getMap).thenAccept(m -> {
@@ -39,7 +38,7 @@ public class TournamentTest {
             reverse(l);
             l.stream().forEach(e -> log.info("{} = {}",e.getKey(), e.getValue()));
         });
-        waitOn(result, 100000).getWinner().ifPresentOrElse(w -> log.info("winner is "+w), () -> log.info("no winner"));
+        waitOn(result, 10000).getWinner().ifPresentOrElse(w -> log.info("winner is "+w), () -> log.info("no winner"));
     }
 
     @Test

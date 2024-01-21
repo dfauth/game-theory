@@ -46,10 +46,10 @@ public class GameTest {
         Strategy strategy1 = new AlwaysDefect();
         Strategy strategy2 = new WeightedRandom(0.10d);
 
-        Game game = new Game(1, strategy1, strategy2);
+        Game game = new Game(100, strategy1, strategy2);
         CompletableFuture<Result> result = game.play();
         result.thenAccept(r -> log.info("result: "+r));
-        assertTrue(TestUtils.waitOn(result).getWinner().map(game).isPresent());
+        assertTrue(TestUtils.waitOn(result,1000).getWinner().map(game).isPresent());
         assertEquals(strategy1, TestUtils.waitOn(result).getWinner().map(game).get());
     }
 

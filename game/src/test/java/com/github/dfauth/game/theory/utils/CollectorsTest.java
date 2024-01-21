@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
-import java.util.function.Function;
 
 import static com.github.dfauth.game.theory.TestUtils.tryCatch;
 import static com.github.dfauth.game.theory.TestUtils.waitOn;
@@ -22,7 +21,7 @@ public class CollectorsTest {
 
     @Test
     public void testIt() {
-        int futureCount = 50;
+        int futureCount = 1000;
         List<CompletableFuture<Integer>> l = new ArrayList<>();
         for(int i=0;i<futureCount;i++) {
             CompletableFuture<Integer> f = new CompletableFuture<>();
@@ -31,18 +30,13 @@ public class CollectorsTest {
             executor.execute(() -> {
                 long sleepTime = (long) (Math.random() * 10);
                 f.complete(tryCatch(() -> {
-                    log.info("{} slept {} msec",finalI,sleepTime);
                     sleep(sleepTime);
                     return finalI;
                 }));
             });
         }
-        Function<List<Integer>, List<Integer>> xy = _l -> {
-            log.info("_l is {}",_l);
-            return _l;
-        };
-        CompletableFuture<List<Integer>> f1 = l.stream().collect(Collectors.future(xy));
-        List<Integer> ll = waitOn(f1, 100000);
+        CompletableFuture<List<Integer>> f1 = l.stream().collect(Collectors.future());
+        List<Integer> ll = waitOn(f1, 10000);
         assertEquals(futureCount,ll.size());
         assertEquals((futureCount/2)*(futureCount-1), ll.stream().mapToInt(Integer::intValue).sum());
     }
