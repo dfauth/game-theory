@@ -25,6 +25,9 @@ public class Result {
 
     private final Map<String, Score> map = new HashMap<>();
 
+    public Result() {
+    }
+
     public Result(Map<String, Score> map) {
         this.map.putAll(map);
     }

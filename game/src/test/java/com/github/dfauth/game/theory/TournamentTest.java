@@ -26,10 +26,10 @@ public class TournamentTest {
     public void testIt() {
 
         Tournament tournament = new Tournament(start, end, games,
-                new AlwaysCooperate(),
-                new AlwaysDefect(),
-                new WeightedRandom(0.10d)
-//                new TitForTat()
+                AlwaysCooperate::new,
+                AlwaysDefect::new,
+                () -> new WeightedRandom(0.10d)
+//                TitForTat::new
         );
         CompletableFuture<Result> result = tournament.run();
         result.thenApply(Result::getMap).thenAccept(m -> {
@@ -45,7 +45,7 @@ public class TournamentTest {
     public void testItNoWinner() {
 
         Tournament tournament = new Tournament(start, end, games,
-                new AlwaysCooperate()
+                AlwaysCooperate::new
         );
         CompletableFuture<Result> result = tournament.run();
         result.thenApply(Result::getMap).thenAccept(m -> {

@@ -2,9 +2,10 @@ package com.github.dfauth.game.theory;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+
+import static com.github.dfauth.game.theory.utils.ExceptionalRunnable.tryCatch;
 
 @Slf4j
 public class TestUtils {
@@ -21,12 +22,4 @@ public class TestUtils {
         return tryCatch(() -> f.get(l,u));
     }
 
-    public static <T> T tryCatch(Callable<T> callable) {
-        try {
-            return callable.call();
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new RuntimeException(e);
-        }
-    }
 }

@@ -1,15 +1,17 @@
 package com.github.dfauth.game.theory;
 
-import com.github.dfauth.game.theory.utils.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.IntStream;
+
+import static java.util.concurrent.CompletableFuture.completedFuture;
 
 @Slf4j
 public class Game implements Function<String,Strategy> {
@@ -40,32 +42,32 @@ public class Game implements Function<String,Strategy> {
     }
 
     private CompletableFuture<Result> playRound(Strategy s1, Strategy s2) {
+
         CompletableFuture<Draw> f1 = new CompletableFuture<>();
         CompletableFuture<Draw> f2 = new CompletableFuture<>();
 
-        CompletableFuture<Result> f = f1.thenCompose(d1 -> f2.thenApply(d2 ->
-                new Result(Map.of(s1.getName(), d1.play(d2), s2.getName(), d2.play(d1)))));
         executor.execute(() -> s1.play(draw -> {
             f1.complete(draw);
-            return f;
+            return f2;
         }));
         executor.execute(() -> s2.play(draw -> {
             f2.complete(draw);
-            return f;
+            return f1;
         }));
-        return f;
+        return f1.thenCompose(d1 -> f2.thenApply(d2 ->
+                new Result(Map.of(s1.getName(), d1.play(d2), s2.getName(), d2.play(d1)))));
     }
 
     public CompletableFuture<Result> play() {
-        int i = 0;
-        for(CompletableFuture<Result> r : rounds) {
-            rounds[i++] = playRound(s1,s2);
-        }
-        return result();
+        return play(r -> {});
     }
 
-    private CompletableFuture<Result> result() {
-        return Arrays.stream(rounds).collect(Collectors.future(Result.reduce));
+    public CompletableFuture<Result> play(Consumer<Result> consumer) {
+        CompletableFuture<Result> dummy = completedFuture(new Result());
+        return IntStream.range(0,rounds.length)
+                .mapToObj(i -> dummy)
+                .reduce(dummy,(prevResult,ignored) -> prevResult.thenCompose(r -> playRound(s1,s2).thenApply(_r -> _r.add(r)))
+                );
     }
 
     public int getRounds() {

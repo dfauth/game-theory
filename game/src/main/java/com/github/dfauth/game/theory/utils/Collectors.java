@@ -39,12 +39,16 @@ public class Collectors {
                     listOfFutureT.add(fT);
                     fT.thenAccept(t -> {
                         listOfT.add(t);
-                        Optional.of(listOfT)
-                                .filter(ignored -> listOfFutureT.size() == listOfT.size())
-                                .filter(ignored -> streamComplete.isDone())
-                                .ifPresent(futListOfT::complete);
+                        resolveFutures();
                     });
                 };
+            }
+
+            private void resolveFutures() {
+                Optional.of(listOfT)
+                        .filter(ignored -> listOfFutureT.size() == listOfT.size())
+                        .filter(ignored -> streamComplete.isDone())
+                        .ifPresent(futListOfT::complete);
             }
 
             @Override
@@ -56,6 +60,7 @@ public class Collectors {
 
             @Override
             public Function<CompletableFuture<List<T>>, CompletableFuture<R>> finisher() {
+                streamComplete.thenAccept(ignored -> resolveFutures());
                 streamComplete.complete(null);
                 return fList -> fList.thenApply(finisher);
             }
