@@ -1,5 +1,6 @@
 package com.github.dfauth.game.theory;
 
+import com.github.dfauth.game.theory.utils.CompletableFutures;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
@@ -11,6 +12,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
+import static com.github.dfauth.game.theory.utils.Function2.Function.peek;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 @Slf4j
@@ -63,11 +65,12 @@ public class Game implements Function<String,Strategy> {
     }
 
     public CompletableFuture<Result> play(Consumer<Result> consumer) {
-        CompletableFuture<Result> dummy = completedFuture(new Result());
         return IntStream.range(0,rounds.length)
-                .mapToObj(i -> dummy)
-                .reduce(dummy,(prevResult,ignored) -> prevResult.thenCompose(r -> playRound(s1,s2).thenApply(_r -> _r.add(r)))
-                );
+                .boxed()
+                .reduce(completedFuture(new Result()),
+                        (prevResult,ignored) -> prevResult.thenCompose(r -> playRound(s1,s2).thenApply(_r -> _r.add(r))),
+                        CompletableFutures.<Result,Result>compose(Result::add)
+                ).thenApply(peek(consumer));
     }
 
     public int getRounds() {

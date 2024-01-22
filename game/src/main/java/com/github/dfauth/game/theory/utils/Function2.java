@@ -15,11 +15,6 @@ public class Function2 {
             return ignored -> {};
         }
 
-        public static <T> java.util.function.Consumer<T> ignore(Runnable runnable) {
-            return t -> {
-                runnable.run();
-            };
-        }
     }
 
     public static class Function {

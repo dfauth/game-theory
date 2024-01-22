@@ -8,6 +8,12 @@ import java.util.function.UnaryOperator;
 
 public interface ExceptionalRunnable extends Runnable {
 
+    default void run() {
+        tryCatchRunnable(this::_run);
+    }
+
+    void _run() throws Exception;
+
     @Slf4j
     class Logger {};
 
@@ -23,6 +29,12 @@ public interface ExceptionalRunnable extends Runnable {
     static <T> Function<Exception,T> propagate() {
         return e -> {
             throw new RuntimeException(e);
+        };
+    }
+
+    static <T> java.util.function.Consumer<T> ignore(ExceptionalRunnable runnable) {
+        return t -> {
+            runnable.run();
         };
     }
 
