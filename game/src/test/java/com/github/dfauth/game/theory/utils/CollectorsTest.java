@@ -10,6 +10,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
 
 import static com.github.dfauth.game.theory.TestUtils.waitOn;
+import static com.github.dfauth.game.theory.utils.CompletableFutures.future;
 import static io.github.dfauth.trycatch.ExceptionalRunnable.tryCatch;
 import static java.lang.Thread.sleep;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,7 +36,7 @@ public class CollectorsTest {
                 }));
             });
         }
-        CompletableFuture<List<Integer>> f1 = l.stream().collect(Collectors.future());
+        CompletableFuture<List<Integer>> f1 = l.stream().collect(future());
         List<Integer> ll = waitOn(f1, 10000);
         assertEquals(futureCount,ll.size());
         assertEquals((futureCount/2)*(futureCount-1), ll.stream().mapToInt(Integer::intValue).sum());
@@ -58,7 +59,7 @@ public class CollectorsTest {
                 }));
             });
         }
-        CompletableFuture<List<Integer>> f1 = l.stream().collect(Collectors.future());
+        CompletableFuture<List<Integer>> f1 = l.stream().collect(future());
         List<Integer> ll = waitOn(f1, 10000);
         assertEquals(futureCount,ll.size());
         assertEquals(0, ll.stream().mapToInt(Integer::intValue).sum());

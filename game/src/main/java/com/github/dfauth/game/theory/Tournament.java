@@ -1,7 +1,7 @@
 package com.github.dfauth.game.theory;
 
 import com.github.dfauth.game.theory.strategies.WrapperStrategy;
-import com.github.dfauth.game.theory.utils.Collectors;
+import com.github.dfauth.game.theory.utils.CompletableFutures;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -34,6 +34,6 @@ public class Tournament {
                 tmp.add(new Game(start,end,left,right).play());
             }
         }
-        return tmp.stream().collect(Collectors.future(Result.reduce));
+        return tmp.stream().collect(CompletableFutures.future(Result.reduce));
     }
 }
