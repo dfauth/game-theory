@@ -9,8 +9,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
 
-import static com.github.dfauth.game.theory.utils.ExceptionalRunnable.tryCatch;
 import static com.github.dfauth.game.theory.TestUtils.waitOn;
+import static io.github.dfauth.trycatch.ExceptionalRunnable.tryCatch;
 import static java.lang.Thread.sleep;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

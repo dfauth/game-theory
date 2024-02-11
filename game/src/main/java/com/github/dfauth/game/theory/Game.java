@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
-import static com.github.dfauth.game.theory.utils.Function2.Function.peek;
+import static io.github.dfauth.trycatch.FunctionalUtils.peek;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 @Slf4j
@@ -69,7 +69,7 @@ public class Game implements Function<String,Strategy> {
                 .boxed()
                 .reduce(completedFuture(new Result()),
                         (prevResult,ignored) -> prevResult.thenCompose(r -> playRound(s1,s2).thenApply(_r -> _r.add(r))),
-                        CompletableFutures.<Result,Result>compose(Result::add)
+                        CompletableFutures.compose(Result::add)
                 ).thenApply(peek(consumer));
     }
 
