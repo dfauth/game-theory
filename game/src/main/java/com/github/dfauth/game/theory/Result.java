@@ -1,65 +1,49 @@
 package com.github.dfauth.game.theory;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
+import static com.github.dfauth.game.theory.Draw.COOPERATE;
+import static com.github.dfauth.game.theory.Draw.DEFECT;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+public enum Result {
+    WIN(DEFECT, COOPERATE, 5),
+    DRAW_COOPERATE(COOPERATE, COOPERATE, 3),
+    DRAW_DEFECT(DEFECT, DEFECT, 1),
+    LOSE(COOPERATE, DEFECT, 0);
 
-import static com.github.dfauth.game.theory.utils.Lists.head;
+    private final int points;
+    private Draw playerDraw;
+    private Draw opponentDraw;
 
-@Slf4j
-@Data
-@ToString
-@EqualsAndHashCode
-public class Result {
-
-    public static Function<List<Result>, Result> reduce = l -> l.stream().reduce(Result::add).orElseThrow(() -> new IllegalArgumentException("No results provided"));
-
-    private final Map<String, Score> map = new HashMap<>();
-
-    public Result() {
+    Result(Draw playerDraw, Draw opponentDraw, int points) {
+        this.playerDraw = playerDraw;
+        this.opponentDraw = opponentDraw;
+        this.points = points;
     }
 
-    public Result(Map<String, Score> map) {
-        this.map.putAll(map);
+    public int points() {
+        return points;
     }
 
-    public Result add(Result r) {
-        r.forEach((k,v) -> {
-            this.map.computeIfPresent(k, (_k, _v) -> _v.add(v));
-            this.map.computeIfAbsent(k, _k -> v);
-        });
-        return this;
+    public Draw playerDraw() {
+        return playerDraw;
     }
 
-    public Optional<String> getOpponent(String name) {
-        List<Map.Entry<String, Score>> result = map.entrySet().stream().filter(e -> !e.getKey().equals(name)).collect(Collectors.toList());
-        return head(result).filter(n -> result.size() == 1).map(Map.Entry::getKey);
+    public Draw opponentDraw() {
+        return opponentDraw;
     }
 
-    public Optional<Score> getScore(String name) {
-        return Optional.of(map.get(name)).map(Score.class::cast);
+    public boolean isWin() {
+        return this == WIN;
     }
 
-    private void forEach(BiConsumer<String, Score> c2) {
-        map.entrySet().stream().forEach(e -> c2.accept(e.getKey(),e.getValue()));
+    public boolean isDraw() {
+        return this == DRAW_COOPERATE || this == DRAW_DEFECT;
     }
 
-    public Optional<String> getWinner() {
-        // find the max
-        return map.values().stream().max(Score::compareTo).flatMap(max -> {
-            // now find all entries equals to the max
-            List<String> winners = map.entrySet().stream().filter(e -> e.getValue().equals(max)).map(Map.Entry::getKey).collect(Collectors.toList());
-            // there can only be one winner
-            return winners.size() == 1 ? head(winners) : Optional.empty();
-        });
+    public boolean isLose() {
+        return this == LOSE;
+    }
+
+    public Score add(Result result) {
+        return new Score(this).add(result);
     }
 }

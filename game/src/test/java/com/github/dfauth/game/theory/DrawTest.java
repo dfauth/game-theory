@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import static com.github.dfauth.game.theory.Draw.COOPERATE;
 import static com.github.dfauth.game.theory.Draw.DEFECT;
+import static com.github.dfauth.game.theory.Result.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Slf4j
@@ -12,10 +13,10 @@ public class DrawTest {
 
     @Test
     public void testIt() {
-        assertEquals(new Score(3),COOPERATE.play(COOPERATE));
-        assertEquals(new Score(0),COOPERATE.play(DEFECT));
-        assertEquals(new Score(5),DEFECT.play(COOPERATE));
-        assertEquals(new Score(1),DEFECT.play(DEFECT));
+        assertEquals(DRAW_COOPERATE,COOPERATE.play(COOPERATE));
+        assertEquals(LOSE,COOPERATE.play(DEFECT));
+        assertEquals(WIN,DEFECT.play(COOPERATE));
+        assertEquals(DRAW_DEFECT,DEFECT.play(DEFECT));
     }
 
 }

@@ -1,6 +1,7 @@
 package com.github.dfauth.game.theory.strategies;
 
 import com.github.dfauth.game.theory.Draw;
+import com.github.dfauth.game.theory.Result;
 import com.github.dfauth.game.theory.Round;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,6 +17,6 @@ public class TitForTat extends NamedStrategy {
 
     @Override
     public void play(Round round) {
-        this.drew = drew.thenCompose(round::submit); // submit what the opponent drew last time
+        this.drew = drew.thenCompose(d -> round.submit(d).thenApply(Result::opponentDraw)); // submit what the opponent drew last time
     }
 }

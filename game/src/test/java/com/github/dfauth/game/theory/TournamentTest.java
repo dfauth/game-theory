@@ -31,8 +31,8 @@ public class TournamentTest {
                 () -> new WeightedRandom(0.10d)
 //                TitForTat::new
         );
-        CompletableFuture<Result> result = tournament.run();
-        result.thenApply(Result::getMap).thenAccept(m -> {
+        CompletableFuture<MatchResult> result = tournament.run();
+        result.thenApply(MatchResult::getMap).thenAccept(m -> {
             List<Map.Entry<String, Score>> l = new ArrayList<>(m.entrySet());
             sort(l,(e1,e2) -> e1.getValue().compareTo(e2.getValue()));
             reverse(l);
@@ -47,8 +47,8 @@ public class TournamentTest {
         Tournament tournament = new Tournament(start, end, games,
                 AlwaysCooperate::new
         );
-        CompletableFuture<Result> result = tournament.run();
-        result.thenApply(Result::getMap).thenAccept(m -> {
+        CompletableFuture<MatchResult> result = tournament.run();
+        result.thenApply(MatchResult::getMap).thenAccept(m -> {
             List<Map.Entry<String, Score>> l = new ArrayList<>(m.entrySet());
             sort(l,(e1,e2) -> e1.getValue().compareTo(e2.getValue()));
             reverse(l);

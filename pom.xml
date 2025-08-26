@@ -2,12 +2,12 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.github.dfauth.game.theory</groupId>
-  <artifactId>game-theory-parent</artifactId>
+  <groupId>com.github.dfauth.match.theory</groupId>
+  <artifactId>match-theory-parent</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>game-theory-parent</name>
+  <name>match-theory-parent</name>
 
   <modules>
     <module>game</module>

@@ -22,11 +22,11 @@ public class TitForTatTest {
         Strategy strategy1 = new AlwaysCooperate("alwaysCooperate1");
         Strategy strategy2 = new TitForTat();
 
-        Game game = new Game(1, strategy1, strategy2);
-        int rounds = game.getRounds();
-        CompletableFuture<Result> result = game.play();
-        assertEquals(new Result(Map.of(strategy1.getName(),new Score(3*rounds), strategy2.getName(),new Score(3*rounds))), waitOn(result, 10000));
-        assertTrue(waitOn(result, 10000).getWinner().map(game).isEmpty());
+        Match match = new Match(1, strategy1, strategy2);
+        int rounds = match.getRounds();
+        CompletableFuture<MatchResult> result = match.play();
+        assertEquals(new MatchResult(Map.of(strategy1.getName(),new Score(3*rounds), strategy2.getName(),new Score(3*rounds))), waitOn(result, 10000));
+        assertTrue(waitOn(result, 10000).getWinner().map(match).isEmpty());
     }
 
     @Test
@@ -47,11 +47,11 @@ public class TitForTatTest {
         {
             Strategy strategy1 = new AlwaysDefect();
             Strategy strategy2 = new TitForTat();
-            Game game = new Game(2, strategy1, strategy2);
-            int rounds = game.getRounds();
-            CompletableFuture<Result> result = game.play(r -> log.info(r.toString()));
-            assertEquals(new Result(Map.of(strategy1.getName(),new Score(1,1,0,6), strategy2.getName(),new Score(0,1,1,1))), waitOn(result, 10000));
-            assertTrue(waitOn(result,10000).getWinner().map(game).isPresent());
+            Match match = new Match(2, strategy1, strategy2);
+            int rounds = match.getRounds();
+            CompletableFuture<MatchResult> result = match.play(r -> log.info(r.toString()));
+            assertEquals(new MatchResult(Map.of(strategy1.getName(),new Score(1,1,0,6), strategy2.getName(),new Score(0,1,1,1))), waitOn(result, 10000));
+            assertTrue(waitOn(result,10000).getWinner().map(match).isPresent());
             assertEquals(strategy1.getName(), waitOn(result).getWinner().get());
             result.thenApply(Objects::toString).thenAccept(log::info);
         }

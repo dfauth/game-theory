@@ -2,10 +2,7 @@ package com.github.dfauth.game.theory.utils;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.BiConsumer;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 import java.util.stream.Collector;
 
 import static java.util.function.Function.identity;
@@ -13,6 +10,10 @@ import static java.util.function.Function.identity;
 public class CompletableFutures {
 
     public static <T> BinaryOperator<CompletableFuture<T>> compose(BinaryOperator<T> f2) {
+        return (_t1,_t2) -> compose((BiFunction<T, T, T>) f2).apply(_t1, _t2);
+    }
+
+    public static <T,R,S> BiFunction<CompletableFuture<T>,CompletableFuture<R>,CompletableFuture<S>> compose(BiFunction<T,R,S> f2) {
         return (fut1,fut2) -> fut1.thenCompose(t1 -> fut2.thenApply(t2 -> f2.apply(t1,t2)));
     }
 

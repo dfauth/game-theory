@@ -2,25 +2,27 @@ package com.github.dfauth.game.theory;
 
 import java.util.function.Function;
 
-public enum Draw {
-    COOPERATE(d -> d.isCooperate() ? new Score(3) : new Score(0)),
-    DEFECT(d -> d.isDefect() ? new Score(1) : new Score(5));
+import static com.github.dfauth.game.theory.Result.*;
 
-    private boolean isDefect() {
+public enum Draw {
+    COOPERATE(d -> d.isCooperate() ? DRAW_COOPERATE : LOSE),
+    DEFECT(d -> d.isDefect() ? DRAW_DEFECT : WIN);
+
+    public boolean isDefect() {
         return !isCooperate();
     }
 
-    private boolean isCooperate() {
+    public boolean isCooperate() {
         return this == COOPERATE;
     }
 
-    private Function<Draw, Score> f;
+    private Function<Draw, Result> f;
 
-    Draw(Function<Draw, Score> f) {
+    Draw(Function<Draw, Result> f) {
         this.f = f;
     }
 
-    public Score play(Draw draw) {
+    public Result play(Draw draw) {
         return f.apply(draw);
     }
 }
