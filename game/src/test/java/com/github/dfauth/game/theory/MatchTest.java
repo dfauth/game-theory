@@ -2,55 +2,113 @@ package com.github.dfauth.game.theory;
 
 import com.github.dfauth.game.theory.strategies.AlwaysCooperate;
 import com.github.dfauth.game.theory.strategies.AlwaysDefect;
-import com.github.dfauth.game.theory.strategies.WeightedRandom;
+import com.github.dfauth.game.theory.strategies.Random;
+import com.github.dfauth.game.theory.strategies.TitForTat;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
-import java.util.Map;
-import java.util.concurrent.*;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.stream.IntStream;
 
+import static com.github.dfauth.game.theory.Side.AWAY;
+import static com.github.dfauth.game.theory.Side.HOME;
+import static io.github.dfauth.trycatch.TryCatch.tryCatch;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
 public class MatchTest {
 
     @Test
-    public void testIt() {
-        Strategy strategy1 = new AlwaysCooperate("alwaysCooperate1");
-        Strategy strategy2 = new AlwaysCooperate("alwaysCooperate2");
+    public void testAlways() throws InterruptedException, ExecutionException, TimeoutException {
+        Strategy left = new AlwaysCooperate();
+        Strategy right = new AlwaysCooperate();
 
-        Match match = new Match(1, strategy1, strategy2);
-        int rounds = match.getRounds();
-        CompletableFuture<Map<String, Score>> score = match.play();
-        assertEquals(Map.of(strategy1.getName(),new Score(0,rounds*3,0,0), strategy2.getName(),new Score(0,3*rounds,0,0)), TestUtils.waitOn(score));
-        assertTrue(TestUtils.waitOn(score).getWinner().map(match).isEmpty());
+        var match = new Match(1);
+        match.match(left, right).get(10000, TimeUnit.MILLISECONDS);
+        log.info("result: "+match.getScore());
+        assertEquals(3, match.getScore().getPoints(HOME));
+        assertEquals(3, match.getScore().getPoints(AWAY));
     }
 
     @Test
-    public void testRandomGame() {
-        Strategy strategy1 = new AlwaysCooperate("alwaysCooperate1");
-        Strategy strategy2 = new AlwaysCooperate("alwaysCooperate2");
+    public void testNever() throws InterruptedException, ExecutionException, TimeoutException {
+        Strategy left = new AlwaysDefect();
+        Strategy right = new AlwaysDefect();
 
-        Match match = new Match(150,250, strategy1, strategy2);
-        int rounds = match.getRounds();
-        assertTrue(rounds>=150);
-        assertTrue(rounds<=250);
-        CompletableFuture<Map<String, Score>> result = match.play();
-        assertEquals(new MatchResult(Map.of(strategy1.getName(),new Score(0,rounds, 0,3*rounds), strategy2.getName(),new Score(0,rounds,0,3*rounds))), TestUtils.waitOn(result));
-        assertTrue(TestUtils.waitOn(result).getWinner().map(match).isEmpty());
+        var match = new Match(1);
+        match.match(left, right).get(10000, TimeUnit.MILLISECONDS);
+        log.info("result: "+match.getScore());
+        assertEquals(1, match.getScore().getPoints(HOME));
+        assertEquals(1, match.getScore().getPoints(AWAY));
     }
 
     @Test
-    public void testRandomVsAlwaysDefectGame() {
-        Strategy strategy1 = new AlwaysDefect();
-        Strategy strategy2 = new WeightedRandom(0.10d);
+    public void testAlwaysAndTitForTat() throws InterruptedException, ExecutionException, TimeoutException {
+        Strategy left = new AlwaysCooperate();
+        Strategy right = new TitForTat();
 
-        Match match = new Match(100, strategy1, strategy2);
-        CompletableFuture<Map<String, Score>> result = match.play();
-        result.thenAccept(r -> log.info("result: "+r));
-        assertTrue(TestUtils.waitOn(result,1000).getWinner().map(match).isPresent());
-        assertEquals(strategy1, TestUtils.waitOn(result).getWinner().map(match).get());
+        var match = new Match(2);
+        match.match(left, right).get(10000, TimeUnit.MILLISECONDS);
+        log.info("result: "+match.getScore());
+        assertEquals(6, match.getScore().getPoints(HOME));
+        assertEquals(6, match.getScore().getPoints(AWAY));
+    }
+
+    @Test
+    public void testNeverAndTitForTat() throws InterruptedException, ExecutionException, TimeoutException {
+        Strategy left = new AlwaysDefect();
+        Strategy right = new TitForTat();
+
+        var match = new Match(2);
+        match.match(left, right).get(10000, TimeUnit.MILLISECONDS);
+        log.info("result: "+match.getScore());
+        assertEquals(6, match.getScore().getPoints(HOME));
+        assertEquals(1, match.getScore().getPoints(AWAY));
+    }
+
+
+    @Test
+    public void testOne() throws InterruptedException, ExecutionException, TimeoutException {
+        Strategy left = new TitForTat();
+        Strategy right = new Random();
+
+        var match = new Match(2);
+        match.match(left, right).get(10000, TimeUnit.MILLISECONDS);
+        log.info("result: "+match.getScore());
+    }
+
+    @Test
+    public void testIt() throws InterruptedException, ExecutionException, TimeoutException {
+        Strategy left = new TitForTat();
+        Strategy right = new Random();
+
+        var match = new Match(200 + (int)(Math.random()-0.5)*40);
+        match.match(left, right).get(10000, TimeUnit.MILLISECONDS);
+        log.info("result: "+match.getScore());
+    }
+
+    @Test
+    public void testTournament() throws InterruptedException, ExecutionException, TimeoutException {
+        List<Strategy> strategies = List.of(new TitForTat(), new Random(), new AlwaysCooperate(), new AlwaysDefect());
+        int[] scores = strategies.stream().mapToInt(_ -> 0).toArray();
+
+        IntStream.range(0, strategies.size()).forEach(i -> {
+            IntStream.range(i+1, strategies.size()).forEach(j -> {
+                var match = new Match(200 + (int)(Math.random()-0.5)*40);
+                tryCatch(() -> match.match(strategies.get(i), strategies.get(j)).get(10000, TimeUnit.MILLISECONDS));
+                log.info("result: "+match.getScore());
+                scores[i] += match.getScore().getPoints(HOME);
+                scores[j] += match.getScore().getPoints(AWAY);
+            });
+        });
+
+        int[] i = new int[] {0};
+        strategies.stream().map(Strategy::name).forEach(s ->
+                log.info("{}: {} ",s,scores[i[0]++])
+        );
     }
 
 }

@@ -1,49 +1,41 @@
 package com.github.dfauth.game.theory;
 
-import static com.github.dfauth.game.theory.Draw.COOPERATE;
-import static com.github.dfauth.game.theory.Draw.DEFECT;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
-public enum Result {
-    WIN(DEFECT, COOPERATE, 5),
-    DRAW_COOPERATE(COOPERATE, COOPERATE, 3),
-    DRAW_DEFECT(DEFECT, DEFECT, 1),
-    LOSE(COOPERATE, DEFECT, 0);
+import static com.github.dfauth.game.theory.Side.AWAY;
+import static com.github.dfauth.game.theory.Side.HOME;
 
-    private final int points;
-    private Draw playerDraw;
-    private Draw opponentDraw;
+@AllArgsConstructor
+@Getter
+@ToString
+@EqualsAndHashCode
+public class Result {
 
-    Result(Draw playerDraw, Draw opponentDraw, int points) {
-        this.playerDraw = playerDraw;
-        this.opponentDraw = opponentDraw;
-        this.points = points;
+    private final Strategy home;
+    private final Action homeAction;
+    private final Strategy away;
+    private final Action awayAction;
+
+    public int getHomePoints() {
+        return getPoints(HOME);
     }
 
-    public int points() {
-        return points;
+    public int getAwayPoints() {
+        return getPoints(AWAY);
     }
 
-    public Draw playerDraw() {
-        return playerDraw;
+    public int getPoints(Side side) {
+        return side.isHome() ? homeAction.play(awayAction) : awayAction.play(homeAction);
     }
 
-    public Draw opponentDraw() {
-        return opponentDraw;
+    public Action getAction(Side side) {
+        return side.isHome() ? homeAction : awayAction;
     }
 
-    public boolean isWin() {
-        return this == WIN;
-    }
-
-    public boolean isDraw() {
-        return this == DRAW_COOPERATE || this == DRAW_DEFECT;
-    }
-
-    public boolean isLose() {
-        return this == LOSE;
-    }
-
-    public Score add(Result result) {
-        return new Score(this).add(result);
+    public Strategy getStrategy(Side side) {
+        return side.isHome() ? home : away;
     }
 }

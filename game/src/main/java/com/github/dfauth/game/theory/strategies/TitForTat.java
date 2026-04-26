@@ -1,22 +1,25 @@
 package com.github.dfauth.game.theory.strategies;
 
-import com.github.dfauth.game.theory.Draw;
-import com.github.dfauth.game.theory.Result;
-import com.github.dfauth.game.theory.Round;
+import com.github.dfauth.game.theory.*;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.concurrent.CompletableFuture;
-
-import static com.github.dfauth.game.theory.Draw.COOPERATE;
-import static java.util.concurrent.CompletableFuture.completedFuture;
-
 @Slf4j
-public class TitForTat extends NamedStrategy {
+public class TitForTat implements Strategy {
 
-    private CompletableFuture<Draw> drew = completedFuture(COOPERATE);
+    private Side side;
+    private Action nextAction =Action.COOPERATE;
+
+
+    @Override
+    public void initialise(Match match) {
+        side = match.register(this);
+    }
 
     @Override
     public void play(Round round) {
-        this.drew = drew.thenCompose(d -> round.submit(d).thenApply(Result::opponentDraw)); // submit what the opponent drew last time
+        round.submit(nextAction).thenAccept(r -> {
+            Action theirAction = r.getAction(side.flip());
+            nextAction = theirAction.isCooperate() ? Action.COOPERATE : Action.DEFECT;
+        });
     }
 }
